@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import FirstObj
+from .models import Mrs
 
-admin.site.register(FirstObj)
+admin.site.register(Mrs)
