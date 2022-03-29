@@ -1,21 +1,3 @@
 <html>
-    <head>
-        <title>Django test</title>
-    </head>
-    <body>
-        <div>
-            <h1>O PRIVET</h1>
-        </div>
-        <div>
-            <p>Сейчас будет дата</p>
-        </div>
-        <div>
-            <p>
-                {% for d in data %}
-                    {{ d.column_num }}
-                    {{ d.column_char }}
-                {% endfor %}
-            </p>
-        </div>
-    </body>
+{{ data }}
 </html>

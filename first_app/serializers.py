@@ -5,4 +5,4 @@ from .models import FirstObj
 class FirstObjSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = FirstObj
-        fields = ('column_num', 'column_char')
+        fields = ('id', 'column_num', 'column_char')
