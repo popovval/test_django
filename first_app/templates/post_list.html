@@ -7,10 +7,15 @@
             <h1>O PRIVET</h1>
         </div>
         <div>
-            <p>O PRIVET</p>
+            <p>Сейчас будет дата</p>
         </div>
         <div>
-            <p>о привет</p>
+            <p>
+                {% for d in data %}
+                    {{ d.column_num }}
+                    {{ d.column_char }}
+                {% endfor %}
+            </p>
         </div>
     </body>
 </html>
