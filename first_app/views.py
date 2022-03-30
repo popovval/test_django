@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.http import JsonResponse
 from .models import Mrs
 import json
 
@@ -15,16 +15,15 @@ def get_info_from_close_mr(data):
     action = data.get('object_attributes').get('action')
     if action == 'close':
         return {'pr_id': data.get('project').get('id'),
-                'mr_id': data.get('object_attributes').get('iid'),
-                'action': data.get('object_attributes').get('action')}
+                'mr_id': data.get('object_attributes').get('iid')}
 
 
-# TODO
-# 1) Secret token
+#TODO
+# +1) Secret token
 # 2) Проверка pr_id, mr_id, action на None
 # 3) .get('object_attributes').get('action') - переделать
 # 4) data.get('object_attributes') - в переменную
-# 5) стандартная функция (см применимость)
+# 5) стандартная функция (см применимость) - чот не могу найти "стандартную"
 # 6) Оставить ответ в виде json
 
 def post_list(request):
@@ -41,4 +40,4 @@ def post_list(request):
     else:
         response = 'Invalid token'
 
-    return render(request, 'post_list.html', {'response': response})
+    return JsonResponse({'response': response})
