@@ -11,33 +11,46 @@ def check_gitlab_token(request, token):
         return False
 
 
-def get_info_from_close_mr(data):
-    action = data.get('object_attributes').get('action')
-    if action == 'close':
-        return {'pr_id': data.get('project').get('id'),
-                'mr_id': data.get('object_attributes').get('iid')}
+def get_mr_info(data):
+    object_attributes = data.get('object_attributes', {})
+    return {'pr_id': data.get('project').get('id'),
+            'mr_id': object_attributes.get('iid'),
+            'action': object_attributes.get('action')}
+
+
+def check_mr_info(mr_info):
+    if not all((mr_info.get('pr_id'), mr_info.get('mr_id'), mr_info.get('action'))):
+        return 'Invalid request json'
+
+
+def create_if_mr_close(mr_info):
+    if mr_info.get('action') == 'close':
+        Mrs.objects.create(project_id=int(mr_info.get('pr_id')), mr_id=int(mr_info.get('mr_id')))
+        return 'MR will be added to database'
+    else:
+        return 'This MR is not closed'
 
 
 #TODO
 # +1) Secret token
-# 2) Проверка pr_id, mr_id, action на None
-# 3) .get('object_attributes').get('action') - переделать
-# 4) data.get('object_attributes') - в переменную
-# 5) стандартная функция (см применимость) - чот не могу найти "стандартную"
-# 6) Оставить ответ в виде json
+# +2) Проверка pr_id, mr_id, action на None
+# +3) .get('object_attributes').get('action') - переделать
+# +4) data.get('object_attributes') - в переменную
+# +-5) стандартная функция (см применимость) - чот не могу найти "стандартную"
+# +6) Оставить ответ в виде json
 
 def post_list(request):
     token = 'test_token'
     if check_gitlab_token(request, token):
         r = request.read()
         data = json.loads(r)
-        resp = get_info_from_close_mr(data)
-        if resp is not None:
-            Mrs.objects.create(project_id=int(resp.get('pr_id')), mr_id=int(resp.get('mr_id')))
-            response = 'MR will be added to database'
+        mr_info = get_mr_info(data)
+        error = check_mr_info(mr_info)
+        if error is None:
+            response = create_if_mr_close(mr_info)
         else:
-            response = 'This MR is not closed'
+            response = error
     else:
         response = 'Invalid token'
 
-    return JsonResponse({'response': response})
+    return JsonResponse({'dds_response': response})
