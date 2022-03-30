@@ -16,5 +16,10 @@ def post_list(request):
     r = request.read()
     data = json.loads(r)
     resp = get_info_from_close_mr(data)
-    Mrs.objects.create(project_id=int(resp.get('pr_id')), mr_id=int(resp.get('mr_id')))
-    return render(request, 'post_list.html', {'data': resp})
+    if resp is not None:
+        Mrs.objects.create(project_id=int(resp.get('pr_id')), mr_id=int(resp.get('mr_id')))
+        response = 'MR will be added to database'
+    else:
+        response = 'This MR is not closed'
+
+    return render(request, 'post_list.html', {'response': response})
