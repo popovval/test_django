@@ -1,4 +1,4 @@
 from django.contrib import admin
-from .models import Mrs
+from .models import Change
 
-admin.site.register(Mrs)
+admin.site.register(Change)

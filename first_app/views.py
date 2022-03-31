@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from .models import Mrs
+from .models import Change
 import json
 
 
@@ -13,7 +13,7 @@ def check_gitlab_token(request, token):
 
 def get_mr_info(data):
     object_attributes = data.get('object_attributes', {})
-    return {'pr_id': data.get('project').get('id'),
+    return {'pr_id': data.get('project', {}).get('id'),
             'mr_id': object_attributes.get('iid'),
             'action': object_attributes.get('action')}
 
@@ -23,21 +23,22 @@ def check_mr_info(mr_info):
         return 'Invalid request json'
 
 
-def create_if_mr_close(mr_info):
+def update_if_mr_close(mr_info):
     if mr_info.get('action') == 'close':
-        Mrs.objects.create(project_id=int(mr_info.get('pr_id')), mr_id=int(mr_info.get('mr_id')))
-        return 'MR will be added to database'
+        return update_change(mr_info.get('pr_id'), mr_info.get('mr_id'))
     else:
         return 'This MR is not closed'
 
 
-#TODO
-# +1) Secret token
-# +2) Проверка pr_id, mr_id, action на None
-# +3) .get('object_attributes').get('action') - переделать
-# +4) data.get('object_attributes') - в переменную
-# +-5) стандартная функция (см применимость) - чот не могу найти "стандартную"
-# +6) Оставить ответ в виде json
+def update_change(pr_id, mr_id):
+    change_to_update = Change.objects.filter(uniq_source_change_id=f'gitlab:prod_id:{pr_id}:mr:{mr_id}')
+    if len(change_to_update) == 1:
+        change_to_update[0].is_deleted = True
+        change_to_update[0].save()
+        return 'Change updated'
+    else:
+        return f'Error in database: object with pr_id:{pr_id} mr_id:{mr_id} not unique'
+
 
 def post_list(request):
     token = 'test_token'
@@ -47,7 +48,7 @@ def post_list(request):
         mr_info = get_mr_info(data)
         error = check_mr_info(mr_info)
         if error is None:
-            response = create_if_mr_close(mr_info)
+            response = update_if_mr_close(mr_info)
         else:
             response = error
     else:
